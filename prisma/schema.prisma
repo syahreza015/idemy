@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserPrivilege {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+model User {
+  id            String        @id @default(uuid())
+  username      String        @unique
+  fullname      String
+  password      String
+  email         String        @unique
+  privilege     UserPrivilege
+  created_class Class[]       @relation("class creator")
+  as_student    Student[]     @relation("user as student")
+  as_teacher    Teacher[]     @relation("user as teacher")
+  register_date DateTime      @default(now())
+
+  @@map("user")
+}
+
+model Class {
+  id                     String    @id @default(uuid())
+  name                   String
+  description            String
+  creator_id             String
+  creator                User      @relation(fields: [creator_id], references: [id], name: "class creator")
+  enrolled_student_count Int       @default(0)
+  teaching_teacher_count Int       @default(0)
+  enrolled_students      Student[] @relation("enrolled class")
+  teaching_teachers      Teacher[] @relation("teaching class")
+  created_date           DateTime  @default(now())
+  updated_date           DateTime  @updatedAt
+
+  @@map("class")
+}
+
+model Student {
+  user_id         String
+  user            User     @relation(fields: [user_id], references: [id], name: "user as student", onDelete: Cascade)
+  class_id        String
+  Class           Class    @relation(fields: [class_id], references: [id], name: "enrolled class", onDelete: Cascade)
+  enrollment_date DateTime @default(now())
+
+  @@id([user_id, class_id])
+  @@map("student")
+}
+
+model Teacher {
+  user_id         String
+  user            User     @relation(fields: [user_id], references: [id], name: "user as teacher", onDelete: Cascade)
+  class_id        String
+  class           Class    @relation(fields: [class_id], references: [id], name: "teaching class", onDelete: Cascade)
+  enrollment_date DateTime @default(now())
+
+  @@id([user_id, class_id])
+  @@map("teacher")
+}

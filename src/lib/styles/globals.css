@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply outline-none;
+  }
+
+  *:focus-visible {
+    @apply outline border-transparent outline-2 outline-offset-0 outline-green-700/75;
+  }
+}
